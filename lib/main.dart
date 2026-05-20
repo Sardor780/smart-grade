@@ -127,6 +127,14 @@ class L10n {
       'upload_error': 'Ошибка загрузки',
       'issued_by': 'Выдано учителем',
       'teacher_label': 'Учитель',
+      'already_submitted': 'Вы уже сдавали этот тест. Попросите учителя открыть доступ.',
+      'room_closed_entry': 'Кабинет закрыт. Вход только по разрешению учителя.',
+      'room_closed_submit': 'Кабинет закрыт — отправка недоступна. Попросите учителя открыть доступ.',
+      'individual_access_active': 'Вам открыт персональный доступ — можно сдать тест.',
+      'open_access': 'Открыть доступ',
+      'close_access': 'Закрыть доступ',
+      'reset_attempt': 'Сбросить попытку',
+      'attempt_label': 'Попытка',
     },
     AppLanguage.uz: {
       'title': 'Baholash tizimi',
@@ -228,6 +236,14 @@ class L10n {
       'upload_error': 'Yuklashda xato',
       'issued_by': 'O\'qituvchi tomonidan berilgan',
       'teacher_label': 'O\'qituvchi',
+      'already_submitted': 'Siz ushbu testni topshirgansiz. O\'qituvchidan ruxsat so\'rang.',
+      'room_closed_entry': 'Kabinet yopiq. Kirish faqat o\'qituvchi ruxsati bilan.',
+      'room_closed_submit': 'Kabinet yopiq — yuborish mumkin emas. O\'qituvchidan ruxsat so\'rang.',
+      'individual_access_active': 'Sizga shaxsiy ruxsat berilgan — testni topshirishingiz mumkin.',
+      'open_access': 'Ruxsatni ochish',
+      'close_access': 'Ruxsatni yopish',
+      'reset_attempt': 'Urinishni o\'chirish',
+      'attempt_label': 'Urinish',
     },
     AppLanguage.en: {
       'title': 'Grading System',
@@ -329,6 +345,14 @@ class L10n {
       'upload_error': 'Upload error',
       'issued_by': 'Issued by teacher',
       'teacher_label': 'Teacher',
+      'already_submitted': 'You have already submitted this test. Ask your teacher for access.',
+      'room_closed_entry': 'Room is closed. Entry only with teacher permission.',
+      'room_closed_submit': 'Room is closed — submission disabled. Ask your teacher for access.',
+      'individual_access_active': 'You have individual access — you may submit the test.',
+      'open_access': 'Grant access',
+      'close_access': 'Revoke access',
+      'reset_attempt': 'Reset attempt',
+      'attempt_label': 'Attempt',
     },
   };
 
@@ -2205,19 +2229,21 @@ class TeacherRoomPage extends StatelessWidget {
             headerStyle: pw.TextStyle(font: robotoBold, color: PdfColors.white),
             headerDecoration: const pw.BoxDecoration(color: PdfColors.teal700),
             cellStyle: const pw.TextStyle(fontSize: 11),
-            headers: ['№', L10n.s('student_name').replaceAll(' *', ''), L10n.s('student_group').replaceAll(' *', ''), L10n.s('avg_grade'), L10n.s('correct_label'), L10n.s('percent_label')],
+            headers: ['№', L10n.s('student_name').replaceAll(' *', ''), L10n.s('student_group').replaceAll(' *', ''), L10n.s('avg_grade'), L10n.s('correct_label'), L10n.s('attempt_label'), 'Выходы'],
             data: List.generate(docs.length, (i) {
               final d = docs[i].data();
               final correct = d['correctCount'] ?? 0;
               final total = d['totalQuestions'] ?? 0;
-              final percent = total > 0 ? (correct / total * 100).toStringAsFixed(1) : '0';
+              final leaves = d['appLeaveCount'] ?? 0;
+              final attempt = d['attemptNumber'] ?? 1;
               return [
                 '${i + 1}',
                 d['studentName'] ?? '—',
                 d['studentGroup'] ?? '—',
                 d['grade'].toString(),
                 '$correct / $total',
-                '$percent%',
+                '#$attempt',
+                leaves > 0 ? '⚠ $leaves' : '—',
               ];
             }),
           ),
@@ -2262,21 +2288,24 @@ class TeacherRoomPage extends StatelessWidget {
     final bold = await PdfGoogleFonts.robotoBold();
     final regular = await PdfGoogleFonts.robotoRegular();
 
-    // Имя учителя
-    String teacherName = "Учитель";
+    // Fetch teacher profile & room creation date
+    String teacherName = roomCode;
+    String dateStr = "-";
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final profile = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-        teacherName = profile.data()?['name'] ?? teacherName;
+      final roomDoc = await FirebaseFirestore.instance.collection('rooms').doc(roomCode).get();
+      final roomData = roomDoc.data();
+      final ownerId = roomData?['ownerId'];
+      
+      // Время создания комнаты
+      final createdAt = (roomData?['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now();
+      dateStr = "${createdAt.day.toString().padLeft(2, '0')}.${createdAt.month.toString().padLeft(2, '0')}.${createdAt.year} "
+                "${createdAt.hour.toString().padLeft(2, '0')}:${createdAt.minute.toString().padLeft(2, '0')}";
+
+      if (ownerId != null) {
+        final profile = await FirebaseFirestore.instance.collection('users').doc(ownerId).get();
+        teacherName = profile.data()?['name'] ?? L10n.s('teacher');
       }
     } catch (_) {}
-
-    // Дата и время сдачи учеником
-    final submittedTimestamp = data['submittedAt'] as Timestamp?;
-    final submittedDate = submittedTimestamp?.toDate() ?? DateTime.now();
-    final dateStr = "${submittedDate.day.toString().padLeft(2, '0')}.${submittedDate.month.toString().padLeft(2, '0')}.${submittedDate.year} "
-                  "${submittedDate.hour.toString().padLeft(2, '0')}:${submittedDate.minute.toString().padLeft(2, '0')}";
 
     pw.MemoryImage? logo;
     try {
@@ -2727,6 +2756,7 @@ class TeacherRoomPage extends StatelessWidget {
                                 sliver: SliverList(
                                   delegate: SliverChildBuilderDelegate(
                                     (context, index) => _SubmissionCard(
+                                      roomCode: roomCode,
                                       doc: docs[index],
                                       questionsMap: {for (var q in questions) q.id: q.data()['text']?.toString() ?? ''},
                                       onCertificatePressed: () => _exportStudentCertificate(context, docs[index]),
@@ -2812,11 +2842,13 @@ class _ExportButton extends StatelessWidget {
 
 class _SubmissionCard extends StatelessWidget {
   const _SubmissionCard({
+    required this.roomCode,
     required this.doc,
     required this.questionsMap,
     required this.onCertificatePressed,
   });
 
+  final String roomCode;
   final QueryDocumentSnapshot<Map<String, dynamic>> doc;
   final Map<String, String> questionsMap;
   final VoidCallback onCertificatePressed;
@@ -2827,15 +2859,14 @@ class _SubmissionCard extends StatelessWidget {
     final answers = (data['answers'] as Map?)?.cast<String, dynamic>() ?? {};
     final perQuestionCorrect = (data['perQuestionCorrect'] as Map?)?.cast<String, bool>() ?? {};
     final appLeaves = (data['appLeaveCount'] as num?)?.toInt() ?? 0;
+    final attempt = data['attemptNumber'] ?? 1;
+    final allowRetake = data['allowRetake'] == true;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      clipBehavior: Clip.antiAlias, // Чтобы при открытии не вылезали углы
+      clipBehavior: Clip.antiAlias,
       child: Theme(
-        // Убираем линии (те самые квадраты) при раскрытии
-        data: Theme.of(context).copyWith(
-          dividerColor: Colors.transparent,
-        ),
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           title: Row(
@@ -2850,7 +2881,7 @@ class _SubmissionCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${data['correctCount']}/${data['totalQuestions']} верно • ${appLeaves > 0 ? "⚠️ $appLeaves выходов" : "Стабильно"}',
+                      '${L10n.s('attempt_label')} #$attempt • ${data['correctCount']}/${data['totalQuestions']} верно • ${appLeaves > 0 ? "⚠️ $appLeaves выходов" : "Стабильно"}',
                       style: TextStyle(
                         fontSize: 13,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -2859,8 +2890,6 @@ class _SubmissionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              // Оценка в кружке
               Container(
                 width: 44,
                 height: 44,
@@ -2869,21 +2898,38 @@ class _SubmissionCard extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
-                child: Text(
-                  '${data['grade']}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
+                child: Text('${data['grade']}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20)),
               ),
             ],
           ),
-          trailing: IconButton(
-            icon: const Icon(Icons.download_for_offline_rounded, color: Colors.teal, size: 28),
-            tooltip: L10n.s('download_cert'),
-            onPressed: onCertificatePressed,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(
+                  allowRetake ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+                  color: allowRetake ? Colors.green : Colors.orange,
+                ),
+                tooltip: allowRetake ? L10n.s('close_access') : L10n.s('open_access'),
+                onPressed: () async {
+                  final studentKey = (data['studentKey'] ?? '').toString();
+                  final studentGroup = (data['studentGroup'] ?? '').toString();
+                  final studentName = (data['studentName'] ?? 'Ученик').toString();
+                  await _setIndividualAccess(
+                    roomCode: roomCode,
+                    studentKey: studentKey.isEmpty ? 'student' : studentKey,
+                    studentGroup: studentGroup,
+                    studentName: studentName,
+                    granted: !allowRetake,
+                    submissionRef: doc.reference,
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.download_for_offline_rounded, color: Colors.teal, size: 28),
+                onPressed: onCertificatePressed,
+              ),
+            ],
           ),
           children: [
             Container(
@@ -3268,19 +3314,62 @@ class _StudentJoinPageState extends State<StudentJoinPage> {
     if (!context.mounted) return;
 
     try {
-      final roomDoc = await FirebaseFirestore.instance
-          .collection('rooms')
-          .doc(roomCode)
-          .get();
-
-      if (!mounted) return;
+      final firestore = FirebaseFirestore.instance;
+      final roomDoc = await firestore.collection('rooms').doc(roomCode).get();
 
       if (!roomDoc.exists) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(L10n.s('room_not_found'))),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(L10n.s('room_not_found'))),
+          );
+        }
         return;
       }
+
+      final roomData = roomDoc.data()!;
+      final bool isRoomClosed = roomData['status'] == 'closed';
+
+      final studentKey = _studentKeyFromName(name);
+
+      // Ищем предыдущие попытки
+      final existing = await firestore
+          .collection('rooms')
+          .doc(roomCode)
+          .collection('submissions')
+          .where('studentKey', isEqualTo: studentKey)
+          .where('studentGroup', isEqualTo: group)
+          .get();
+
+      final individuallyAuthorized = await _hasIndividualAccess(
+        firestore: firestore,
+        roomCode: roomCode,
+        studentKey: studentKey,
+        studentGroup: group,
+        submissions: existing.docs,
+      );
+
+      final hasPreviousAttempt = existing.docs.isNotEmpty;
+      String? denyMessageKey;
+
+      if (isRoomClosed && !individuallyAuthorized) {
+        denyMessageKey = 'room_closed_entry';
+      } else if (hasPreviousAttempt && !individuallyAuthorized) {
+        denyMessageKey = 'already_submitted';
+      }
+
+      if (denyMessageKey != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(L10n.s(denyMessageKey)),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      if (!mounted) return;
 
       Navigator.of(context).push(
         _modernRoute(
@@ -3288,13 +3377,14 @@ class _StudentJoinPageState extends State<StudentJoinPage> {
             roomCode: roomCode,
             studentName: name,
             studentGroup: group,
+            individuallyAuthorized: individuallyAuthorized,
           ),
         ),
       );
-    } on FirebaseException catch (e) {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка Firebase: ${e.code}')),
+          SnackBar(content: Text('Ошибка: $e')),
         );
       }
     }
@@ -3378,11 +3468,13 @@ class StudentAnswerPage extends StatefulWidget {
     required this.roomCode,
     required this.studentName,
     required this.studentGroup,
+    this.individuallyAuthorized = false,
   });
 
   final String roomCode;
   final String studentName;
   final String studentGroup;
+  final bool individuallyAuthorized;
 
   @override
   State<StudentAnswerPage> createState() => _StudentAnswerPageState();
@@ -3402,6 +3494,9 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
   List<QueryDocumentSnapshot<Map<String, dynamic>>>? _shuffledDocs;
   int _appLeaveCount = 0;
   int _currentIndex = 0;
+  bool _roomClosed = false;
+
+  String get _studentKey => _studentKeyFromName(widget.studentName);
 
   @override
   void initState() {
@@ -3450,9 +3545,20 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden) {
       _appLeaveCount++;
       HapticFeedback.vibrate();
+      // АВТО-ЗАВЕРШЕНИЕ ПРИ ВЫХОДЕ (нарушение: сворачивание, другая вкладка на Web)
+      if (!_submitting && !_autoSubmitted) {
+        _autoSubmitted = true;
+        _submit(
+          _shuffledDocs ?? [],
+          roomClosed: _roomClosed,
+          isAuto: true,
+        );
+      }
     }
   }
 
@@ -3475,7 +3581,11 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
           }
           if (_remainingSeconds == 0 && !_submitting && !_autoSubmitted) {
             _autoSubmitted = true;
-            _submit(_shuffledDocs!, roomClosed: false);
+            _submit(
+              _shuffledDocs ?? [],
+              roomClosed: _roomClosed,
+              isAuto: true,
+            );
           }
         });
       });
@@ -3488,30 +3598,35 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
     List<QueryDocumentSnapshot<Map<String, dynamic>>> docs, {
     required bool roomClosed,
     String? testTitle,
+    bool isAuto = false,
+    bool hasIndividualPass = false,
   }) async {
-    if (roomClosed) {
+    final canSubmitWhenClosed = hasIndividualPass || widget.individuallyAuthorized;
+
+    if (roomClosed && !canSubmitWhenClosed && !isAuto) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Комната закрыта — отправка запрещена')),
+          SnackBar(content: Text(L10n.s('room_closed_submit'))),
         );
       }
       return;
     }
 
-    // Confirmation Dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text(L10n.s('confirm_finish')),
-        content: Text(L10n.s('confirm_finish_desc')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(L10n.s('cancel'))),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(L10n.s('send_answers'))),
-        ],
-      ),
-    );
+    if (!isAuto) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Text(L10n.s('confirm_finish')),
+          content: Text(L10n.s('confirm_finish_desc')),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c, false), child: Text(L10n.s('cancel'))),
+            FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(L10n.s('send_answers'))),
+          ],
+        ),
+      );
 
-    if (confirmed != true) return;
+      if (confirmed != true) return;
+    }
 
     setState(() => _submitting = true);
 
@@ -3552,13 +3667,19 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
     final total = docs.length;
     final grade = _calculateGrade(correctCount: correctCount, total: total);
 
-    final safeName = widget.studentName
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'\s+'), '_')
-        .replaceAll(RegExp(r'[^a-z0-9_а-яё]'), '');
+    final safeName = _studentKey;
 
     try {
+      final submissions = await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomCode)
+          .collection('submissions')
+          .where('studentKey', isEqualTo: safeName.isEmpty ? 'student' : safeName)
+          .where('studentGroup', isEqualTo: widget.studentGroup)
+          .get();
+
+      final attemptNumber = submissions.docs.length + 1;
+
       await FirebaseFirestore.instance
           .collection('rooms')
           .doc(widget.roomCode)
@@ -3572,11 +3693,19 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
         'correctCount': correctCount,
         'totalQuestions': total,
         'grade': grade,
+        'attemptNumber': attemptNumber,
         'startedAt': _startedAt?.toIso8601String(),
         'durationSeconds': _remainingSeconds,
         'appLeaveCount': _appLeaveCount,
+        'allowRetake': false,
         'submittedAt': FieldValue.serverTimestamp(),
       });
+
+      await _burnIndividualAccess(
+        roomCode: widget.roomCode,
+        studentKey: safeName,
+        studentGroup: widget.studentGroup,
+      );
 
       await _Persistence.addStudentResult({
         'roomCode': widget.roomCode,
@@ -3615,7 +3744,7 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
         );
       }
     } finally {
-      if (context.mounted) {
+      if (mounted) {
         setState(() => _submitting = false);
       }
     }
@@ -3638,49 +3767,125 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
       builder: (context, roomSnap) {
         final room = roomSnap.data?.data();
         final roomClosed = room?['status'] == 'closed';
+        _roomClosed = roomClosed;
         final testTitle = room?['testTitle']?.toString();
         final durationSeconds = (room?['durationSeconds'] as num?)?.toInt();
         if (durationSeconds != null) _ensureTimerStarted(durationSeconds);
 
-        return _GradientScaffold(
-          appBar: AppBar(
-            title: Text(testTitle ?? '${L10n.s('room_code')} ${widget.roomCode}'),
-            actions: const [_LanguageSwitch(), _ThemeSwitch()],
-          ),
-          body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: questionStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) return _StateMessage(icon: Icons.error_outline, title: L10n.s('error'));
-              if (!snapshot.hasData) {
-                return _StateMessage(icon: Icons.hourglass_top_rounded, title: L10n.s('loading'), isLoading: true);
-              }
+        final grantStream = roomRef
+            .collection('accessGrants')
+            .doc(_accessGrantDocId(_studentKey, widget.studentGroup))
+            .snapshots();
 
-              final docsFromSnapshot = snapshot.data!.docs;
-              if (docsFromSnapshot.isEmpty) {
-                return _StateMessage(icon: Icons.help_outline_rounded, title: L10n.s('no_submissions'));
-              }
+        final studentSubsStream = roomRef
+            .collection('submissions')
+            .where('studentKey', isEqualTo: _studentKey)
+            .where('studentGroup', isEqualTo: widget.studentGroup)
+            .snapshots();
 
-              _shuffledDocs ??= List.from(docsFromSnapshot)..shuffle();
-              final docs = _shuffledDocs!;
+        return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+          stream: grantStream,
+          builder: (context, grantSnap) {
+            return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: studentSubsStream,
+              builder: (context, subsSnap) {
+                final hasIndividualPass = widget.individuallyAuthorized ||
+                    _individualPassFromSnapshots(
+                      grantSnap: grantSnap.data,
+                      subsSnap: subsSnap.data,
+                    );
+                final canSubmit = !roomClosed || hasIndividualPass;
 
-              final remaining = _remainingSeconds;
-              if (remaining == 0 && !_submitting && !_autoSubmitted) {
-                _autoSubmitted = true;
-                _submit(docs, roomClosed: false, testTitle: testTitle);
-              }
+                return _GradientScaffold(
+                  appBar: AppBar(
+                    title: Text(testTitle ?? '${L10n.s('room_code')} ${widget.roomCode}'),
+                    actions: const [_LanguageSwitch(), _ThemeSwitch()],
+                  ),
+                  body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                    stream: questionStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return _StateMessage(icon: Icons.error_outline, title: L10n.s('error'));
+                      }
+                      if (!snapshot.hasData) {
+                        return _StateMessage(
+                          icon: Icons.hourglass_top_rounded,
+                          title: L10n.s('loading'),
+                          isLoading: true,
+                        );
+                      }
 
-              final isCritical = remaining != null && remaining <= 300;   // 5 минут
+                      final docsFromSnapshot = snapshot.data!.docs;
+                      if (docsFromSnapshot.isEmpty) {
+                        return _StateMessage(icon: Icons.help_outline_rounded, title: L10n.s('no_data'));
+                      }
+
+                      _shuffledDocs ??= List.from(docsFromSnapshot)..shuffle();
+                      final docs = _shuffledDocs!;
+
+                      final remaining = _remainingSeconds;
+                      if (remaining == 0 && !_submitting && !_autoSubmitted) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted || _autoSubmitted || _submitting) return;
+                          _autoSubmitted = true;
+                          _submit(
+                            docs,
+                            roomClosed: roomClosed,
+                            testTitle: testTitle,
+                            isAuto: true,
+                            hasIndividualPass: hasIndividualPass,
+                          );
+                        });
+                      }
+
+                      final isCritical = remaining != null && remaining <= 300; // 5 минут
               final isDanger = remaining != null && remaining <= 60;
 
               final timerText = remaining == null
                   ? '--:--'
                   : '${(remaining ~/ 60).toString().padLeft(2, '0')}:${(remaining % 60).toString().padLeft(2, '0')}';
 
-              return ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  // Таймер + Информация
-                  Column(
+                      return ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          if (roomClosed) ...[
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: hasIndividualPass
+                                    ? Colors.green.withValues(alpha: 0.12)
+                                    : Colors.red.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: hasIndividualPass ? Colors.green : Colors.red,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    hasIndividualPass ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+                                    color: hasIndividualPass ? Colors.green : Colors.red,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      hasIndividualPass
+                                          ? L10n.s('individual_access_active')
+                                          : L10n.s('room_closed_submit'),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: hasIndividualPass ? Colors.green.shade800 : Colors.red.shade800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          // Таймер + Информация
+                          Column(
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -3934,7 +4139,14 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
                         )
                       else
                         FilledButton.icon(
-                          onPressed: _submitting ? null : () => _submit(docs, roomClosed: roomClosed, testTitle: testTitle),
+                          onPressed: canSubmit && !_submitting
+                              ? () => _submit(
+                                    docs,
+                                    roomClosed: roomClosed,
+                                    testTitle: testTitle,
+                                    hasIndividualPass: hasIndividualPass,
+                                  )
+                              : null,
                           icon: const Icon(Icons.send),
                           label: Text(_submitting ? L10n.s('sending') : L10n.s('finish_test')),
                           style: FilledButton.styleFrom(backgroundColor: Colors.green, minimumSize: const Size(180, 56)),
@@ -3949,7 +4161,14 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed: _submitting ? null : () => _submit(docs, roomClosed: roomClosed, testTitle: testTitle),
+                        onPressed: canSubmit && !_submitting
+                            ? () => _submit(
+                                  docs,
+                                  roomClosed: roomClosed,
+                                  testTitle: testTitle,
+                                  hasIndividualPass: hasIndividualPass,
+                                )
+                            : null,
                         icon: const Icon(Icons.check_circle_outline, color: Colors.green),
                         label: Text(L10n.s('finish_and_send'), style: const TextStyle(fontSize: 16)),
                         style: OutlinedButton.styleFrom(
@@ -3959,10 +4178,14 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
                         ),
                       ),
                     ),
-                ],
-              );
-            },
-          ),
+                        ],
+                      );
+                    },
+                  ),
+                );
+              },
+            );
+          },
         );
       },
     );
@@ -4543,6 +4766,152 @@ class _QuestionInput {
 }
 
 enum _QuestionType { short, trueFalse, mcq }
+
+String _studentKeyFromName(String name) {
+  final safeName = name.trim().toLowerCase()
+      .replaceAll(RegExp(r'\s+'), '_')
+      .replaceAll(RegExp(r'[^a-z0-9_а-яё]'), '');
+  return safeName.isEmpty ? 'student' : safeName;
+}
+
+String _accessGrantDocId(String studentKey, String studentGroup) {
+  return '${studentKey}_${studentGroup.replaceAll(RegExp(r'[/\\.]'), '_')}';
+}
+
+bool _individualPassFromSnapshots({
+  DocumentSnapshot<Map<String, dynamic>>? grantSnap,
+  QuerySnapshot<Map<String, dynamic>>? subsSnap,
+}) {
+  if (grantSnap?.data()?['granted'] == true) return true;
+  if (subsSnap == null || subsSnap.docs.isEmpty) return false;
+
+  DateTime latest = DateTime(0);
+  bool allowRetake = false;
+  for (final doc in subsSnap.docs) {
+    final data = doc.data();
+    final time = (data['submittedAt'] as Timestamp?)?.toDate() ?? DateTime(0);
+    if (time.isAfter(latest)) {
+      latest = time;
+      allowRetake = data['allowRetake'] == true;
+    }
+  }
+  return allowRetake;
+}
+
+Future<bool> _hasIndividualAccess({
+  required FirebaseFirestore firestore,
+  required String roomCode,
+  required String studentKey,
+  required String studentGroup,
+  List<QueryDocumentSnapshot<Map<String, dynamic>>>? submissions,
+}) async {
+  final grantId = _accessGrantDocId(studentKey, studentGroup);
+  final grant = await firestore
+      .collection('rooms')
+      .doc(roomCode)
+      .collection('accessGrants')
+      .doc(grantId)
+      .get();
+  if (grant.data()?['granted'] == true) return true;
+
+  final docs = submissions ??
+      (await firestore
+              .collection('rooms')
+              .doc(roomCode)
+              .collection('submissions')
+              .where('studentKey', isEqualTo: studentKey)
+              .where('studentGroup', isEqualTo: studentGroup)
+              .get())
+          .docs;
+
+  if (docs.isEmpty) return false;
+
+  DateTime latest = DateTime(0);
+  bool allowRetake = false;
+  for (final doc in docs) {
+    final data = doc.data();
+    final time = (data['submittedAt'] as Timestamp?)?.toDate() ?? DateTime(0);
+    if (time.isAfter(latest)) {
+      latest = time;
+      allowRetake = data['allowRetake'] == true;
+    }
+  }
+  return allowRetake;
+}
+
+Future<void> _setIndividualAccess({
+  required String roomCode,
+  required String studentKey,
+  required String studentGroup,
+  required String studentName,
+  required bool granted,
+  DocumentReference<Map<String, dynamic>>? submissionRef,
+}) async {
+  final firestore = FirebaseFirestore.instance;
+  final grantRef = firestore
+      .collection('rooms')
+      .doc(roomCode)
+      .collection('accessGrants')
+      .doc(_accessGrantDocId(studentKey, studentGroup));
+
+  if (granted) {
+    await grantRef.set({
+      'granted': true,
+      'studentKey': studentKey,
+      'studentGroup': studentGroup,
+      'studentName': studentName,
+      'grantedAt': FieldValue.serverTimestamp(),
+    });
+    if (submissionRef != null) {
+      await submissionRef.update({'allowRetake': true});
+    }
+  } else {
+    await grantRef.delete();
+    if (submissionRef != null) {
+      await submissionRef.update({'allowRetake': false});
+    }
+    final subs = await firestore
+        .collection('rooms')
+        .doc(roomCode)
+        .collection('submissions')
+        .where('studentKey', isEqualTo: studentKey)
+        .where('studentGroup', isEqualTo: studentGroup)
+        .get();
+    for (final d in subs.docs) {
+      if (d.data()['allowRetake'] == true) {
+        await d.reference.update({'allowRetake': false});
+      }
+    }
+  }
+}
+
+Future<void> _burnIndividualAccess({
+  required String roomCode,
+  required String studentKey,
+  required String studentGroup,
+}) async {
+  final firestore = FirebaseFirestore.instance;
+  await firestore
+      .collection('rooms')
+      .doc(roomCode)
+      .collection('accessGrants')
+      .doc(_accessGrantDocId(studentKey, studentGroup))
+      .delete();
+
+  final subs = await firestore
+      .collection('rooms')
+      .doc(roomCode)
+      .collection('submissions')
+      .where('studentKey', isEqualTo: studentKey)
+      .where('studentGroup', isEqualTo: studentGroup)
+      .get();
+
+  for (final d in subs.docs) {
+    if (d.data()['allowRetake'] == true) {
+      await d.reference.update({'allowRetake': false});
+    }
+  }
+}
 
 int _calculateGrade({required int correctCount, required int total}) {
   if (total <= 0) return 2;

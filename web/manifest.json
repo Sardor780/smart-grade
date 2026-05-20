@@ -1,11 +1,11 @@
 {
-    "name": "untitled",
-    "short_name": "untitled",
+    "name": "SmartGrade",
+    "short_name": "SmartGrade",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "SmartGrade",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
