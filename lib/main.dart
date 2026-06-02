@@ -22,6 +22,8 @@ import 'package:collection/collection.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'firebase_options.dart';
+import 'bulk_import_screen.dart';
+import 'room_access_screen.dart';
 
 enum AppLanguage { ru, uz, en }
 
@@ -66,6 +68,7 @@ class L10n {
       'sending': 'Отправка...',
       'timer': 'Таймер',
       'short_answer': 'Короткий ответ',
+      'your_answer': 'Ваш ответ',
       'true_false': 'Правда / Ложь',
       'mcq': 'Тест (1 вариант)',
       'correct_answer': 'Правильный ответ',
@@ -135,6 +138,37 @@ class L10n {
       'close_access': 'Закрыть доступ',
       'reset_attempt': 'Сбросить попытку',
       'attempt_label': 'Попытка',
+      'access_management': 'Управление доступом',
+      'limit_attempts': 'Лимит попыток',
+      'no_limit': 'Без лимита',
+      'mass_reset': 'Сбросить попытки всем',
+      'group_access': 'Доступ по группам',
+      'start_date': 'Дата начала',
+      'end_date': 'Дата окончания',
+      'settings_saved': 'Настройки сохранены',
+      'attempts_reset_success': 'Попытки сброшены',
+      'how_to_import': 'Как подготовить данные?',
+      'help_excel_desc': 'Столбец А: Текст вопроса\nСтолбец B: Ответ (или варианты через запятую)\nСтолбец C: Номер верного (для теста)',
+      'help_text_desc': '1. Вопрос\n2. Правильный ответ\n\nИли для теста:\n1. Вопрос\n2. Опция1, Опция2, Опция3\n3. 1 (номер верного)',
+      'help_tf_desc': 'Просто напишите "Правда" или "Ложь" во второй колонке (или второй строке текста).',
+      'import_from_text': 'Импорт из текста',
+      'parse_btn': 'ПАРСИТЬ',
+      'text_import_hint': 'Вопрос 1\nОтвет\n\nВопрос 2\nВарианты через запятую\n1',
+      'google_sheets_url': 'Ссылка Google Таблиц',
+      'google_sheets_hint': 'Убедитесь, что таблица опубликована или доступна по ссылке.',
+      'finish_btn': 'ЗАВЕРШИТЬ',
+      'group_stats': 'Статистика по группам',
+      'bottom_students': 'Нуждаются в помощи',
+      'completion_rate': 'Процент завершения',
+      'group_report': 'Отчёт по группе',
+      'started_label': 'Начали',
+      'submitted_label': 'Сдали',
+      'active_now': 'Сейчас проходят',
+      'reset_confirm': 'Сбросить все попытки?',
+      'reset_group_confirm': 'Сбросить попытки для группы',
+      'excel_label': 'Excel',
+      'sheets_label': 'Таблицы',
+      'text_label': 'Текст',
     },
     AppLanguage.uz: {
       'title': 'Baholash tizimi',
@@ -160,7 +194,7 @@ class L10n {
       'close': 'Yopish',
       'submissions': 'Javoblar',
       'avg_grade': 'O\'rtacha ball',
-      'accuracy': 'Anıqlik',
+      'accuracy': 'Aniqlik',
       'top_students': 'Top o\'quvchilar',
       'hard_questions': 'Qiyin savollar',
       'no_data': 'Ma\'lumot yo\'q',
@@ -175,6 +209,7 @@ class L10n {
       'sending': 'Yuborilmoqda...',
       'timer': 'Taymer',
       'short_answer': 'Qisqa javob',
+      'your_answer': 'Sizning javobingiz',
       'true_false': 'Rost / Yolg\'on',
       'mcq': 'Test (1 variant)',
       'correct_answer': 'To\'g\'ri javob',
@@ -190,7 +225,7 @@ class L10n {
       'brand_name': 'Urganch raqamli texnologiyalar texnikumi',
       'about': 'Tizim haqida',
       'about_desc': 'Ushbu tizim test sinovlari va baholash jarayonini avtomatlashtirish uchun ishlab chiqilgan.',
-      'required_fields': 'Iltimos, barcha majburiy mayдонларни to\'ldiring',
+      'required_fields': 'Iltimos, barcha majburiy maydonlarni to\'ldiring',
       'question': 'Savol',
       'delete': 'O\'chirish',
       'login': 'O\'qituvchilar uchun kirish',
@@ -244,6 +279,37 @@ class L10n {
       'close_access': 'Ruxsatni yopish',
       'reset_attempt': 'Urinishni o\'chirish',
       'attempt_label': 'Urinish',
+      'access_management': 'Kirishni boshqarish',
+      'limit_attempts': 'Urinishlar soni',
+      'no_limit': 'Cheksiz',
+      'mass_reset': 'Barcha urinishlarni o\'chirish',
+      'group_access': 'Guruhlar bo\'yicha kirish',
+      'start_date': 'Boshlanish sanasi',
+      'end_date': 'Tugash sanasi',
+      'settings_saved': 'Sozlamalar saqlandi',
+      'attempts_reset_success': 'Urinishlar o\'chirildi',
+      'how_to_import': 'Ma\'lumotlarni qanday tayyorlash kerak?',
+      'help_excel_desc': 'A ustun: Savol matni\nB ustun: Javob (yoki variantlar vergul bilan)\nC ustun: To\'g\'ri javob raqami (test uchun)',
+      'help_text_desc': '1. Savol\n2. To\'g\'ri javob\n\nYoki test uchun:\n1. Savol\n2. Variantlar (vergul bilan)\n3. 1 (to\'g\'ri javob raqami)',
+      'help_tf_desc': 'Ikkinchi ustunga (yoki matnning ikkinchi qatoriga) "Rost" yoki "Yolg\'on" deb yozing.',
+      'import_from_text': 'Matndan import qilish',
+      'parse_btn': 'PARS QILISH',
+      'text_import_hint': '1-savol\nJavob\n\n2-savol\nVariantlar vergul bilan\n1',
+      'google_sheets_url': 'Google Sheets havolasi',
+      'google_sheets_hint': 'Jadval ochiq ekanligiga ishonch hosil qiling.',
+      'finish_btn': 'YAKUNLASH',
+      'group_stats': 'Guruhlar statistikasi',
+      'bottom_students': 'Yordam kerak bo\'lganlar',
+      'completion_rate': 'Tugallanganlik darajasi',
+      'group_report': 'Guruh hisoboti',
+      'started_label': 'Boshladi',
+      'submitted_label': 'Yubordi',
+      'active_now': 'Hozir topshirishmoqda',
+      'reset_confirm': 'Barcha urinishlarni o\'chirish?',
+      'reset_group_confirm': 'Guruh urinishlarini o\'chirish:',
+      'excel_label': 'Excel',
+      'sheets_label': 'Jadvallar',
+      'text_label': 'Matn',
     },
     AppLanguage.en: {
       'title': 'Grading System',
@@ -284,6 +350,7 @@ class L10n {
       'sending': 'Submitting...',
       'timer': 'Timer',
       'short_answer': 'Short Answer',
+      'your_answer': 'Your answer',
       'true_false': 'True / False',
       'mcq': 'Multiple Choice',
       'correct_answer': 'Correct Answer',
@@ -353,6 +420,37 @@ class L10n {
       'close_access': 'Revoke access',
       'reset_attempt': 'Reset attempt',
       'attempt_label': 'Attempt',
+      'access_management': 'Access Management',
+      'limit_attempts': 'Attempt Limit',
+      'no_limit': 'No limit',
+      'mass_reset': 'Reset all attempts',
+      'group_access': 'Group Access',
+      'start_date': 'Start Date',
+      'end_date': 'End Date',
+      'settings_saved': 'Settings saved',
+      'attempts_reset_success': 'Attempts reset',
+      'how_to_import': 'How to prepare data?',
+      'help_excel_desc': 'Column A: Question text\nColumn B: Answer (or options comma separated)\nColumn C: Correct number (for MCQ)',
+      'help_text_desc': '1. Question\n2. Correct answer\n\nOr for MCQ:\n1. Question\n2. Option1, Option2, Option3\n3. 1 (correct index)',
+      'help_tf_desc': 'Just write "True" or "False" in the second column (or second line of text).',
+      'import_from_text': 'Import from Text',
+      'parse_btn': 'PARSE',
+      'text_import_hint': 'Question 1\nAnswer\n\nQuestion 2\nOptions comma separated\n1',
+      'google_sheets_url': 'Google Sheets URL',
+      'google_sheets_hint': 'Make sure the sheet is published or accessible by link.',
+      'finish_btn': 'FINISH',
+      'group_stats': 'Group Statistics',
+      'bottom_students': 'Needs Help',
+      'completion_rate': 'Completion Rate',
+      'group_report': 'Group Report',
+      'started_label': 'Started',
+      'submitted_label': 'Submitted',
+      'active_now': 'Active now',
+      'reset_confirm': 'Reset all attempts?',
+      'reset_group_confirm': 'Reset attempts for group',
+      'excel_label': 'Excel',
+      'sheets_label': 'Sheets',
+      'text_label': 'Text',
     },
   };
 
@@ -927,7 +1025,7 @@ class _TeacherAuthPageState extends State<TeacherAuthPage> {
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Auth Error')),
+          SnackBar(content: Text(e.message ?? L10n.s('error'))),
         );
       }
     } finally {
@@ -1339,6 +1437,42 @@ class _TeacherEditPageState extends State<TeacherEditPage> {
     }
   }
 
+  Future<void> _importQuestions() async {
+    final List<ImportedQuestion>? imported = await Navigator.push<List<ImportedQuestion>>(
+      context,
+      _modernRoute(const BulkImportScreen()),
+    );
+
+    if (imported != null && imported.isNotEmpty) {
+      setState(() {
+        for (final q in imported) {
+          final input = _QuestionInput();
+          input.question.text = q.text;
+          input.type = _mapType(q.type);
+          if (input.type == _QuestionType.short) {
+            input.answer.text = q.answer ?? '';
+          } else if (input.type == _QuestionType.trueFalse) {
+            input.trueFalseValue = q.isTrue;
+          } else if (input.type == _QuestionType.mcq) {
+            for (int i = 0; i < q.options.length && i < input.options.length; i++) {
+              input.options[i].text = q.options[i];
+            }
+            input.correctIndex = q.correctIndex;
+          }
+          _questions.add(input);
+        }
+      });
+    }
+  }
+
+  _QuestionType _mapType(ImportedQuestionType type) {
+    switch (type) {
+      case ImportedQuestionType.short: return _QuestionType.short;
+      case ImportedQuestionType.trueFalse: return _QuestionType.trueFalse;
+      case ImportedQuestionType.mcq: return _QuestionType.mcq;
+    }
+  }
+
   Future<void> _saveChanges() async {
     final teacher = _teacherController.text.trim();
     final group = _groupController.text.trim();
@@ -1464,13 +1598,24 @@ class _TeacherEditPageState extends State<TeacherEditPage> {
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         labelText: L10n.s('duration'),
-                        hintText: 'Например: 10',
+                        hintText: '${L10n.s('duration').toLowerCase()}...',
                         border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text(L10n.s('questions_label'),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(L10n.s('questions_label'),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                        TextButton.icon(
+                          onPressed: _importQuestions,
+                          icon: const Icon(Icons.paste_rounded, size: 18),
+                          label: Text(L10n.s('bulk_import')),
+                          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 8),
                     ...List.generate(_questions.length, (index) {
                       final input = _questions[index];
@@ -1836,107 +1981,39 @@ class _TeacherCreatePageState extends State<TeacherCreatePage> {
     return List.generate(6, (_) => chars[random.nextInt(chars.length)]).join();
   }
 
-  void _showBulkImportDialog() {
-    final controller = TextEditingController();
-    final lang = _LanguageController.instance.value;
-    final example = lang == AppLanguage.ru
-        ? '1. Сколько планет?\n8\n2. Солнце - это звезда?\nПравда\n3. Столица?\nБерлин, Лондон, Париж\n2'
-        : lang == AppLanguage.uz
-            ? '1. Nechta sayyora?\n8\n2. Quyosh yulduzmi?\nRost\n3. Poytaxt?\nBerlin, London, Parij\n2'
-            : '1. How many planets?\n8\n2. Sun is a star?\nTrue\n3. Capital?\nBerlin, London, Paris\n2';
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(L10n.s('bulk_import')),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(L10n.s('bulk_desc'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                maxLines: 12,
-                decoration: InputDecoration(
-                  hintText: example,
-                  helperText: 'Разделяйте вопросы пустой строкой для надежности',
-                  alignLabelWithHint: true,
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(L10n.s('cancel')),
-          ),
-          FilledButton(
-            onPressed: () {
-              _parseBulkText(controller.text);
-              Navigator.pop(context);
-            },
-            child: Text(L10n.s('import_btn')),
-          ),
-        ],
-      ),
+  Future<void> _importQuestions() async {
+    final List<ImportedQuestion>? imported = await Navigator.push<List<ImportedQuestion>>(
+      context,
+      _modernRoute(const BulkImportScreen()),
     );
+
+    if (imported != null && imported.isNotEmpty) {
+      setState(() {
+        for (final q in imported) {
+          final input = _QuestionInput();
+          input.question.text = q.text;
+          input.type = _mapType(q.type);
+          if (input.type == _QuestionType.short) {
+            input.answer.text = q.answer ?? '';
+          } else if (input.type == _QuestionType.trueFalse) {
+            input.trueFalseValue = q.isTrue;
+          } else if (input.type == _QuestionType.mcq) {
+            for (int i = 0; i < q.options.length && i < input.options.length; i++) {
+              input.options[i].text = q.options[i];
+            }
+            input.correctIndex = q.correctIndex;
+          }
+          _questions.add(input);
+        }
+      });
+    }
   }
 
-  void _parseBulkText(String text) {
-    final lines = text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
-    final newQuestions = <_QuestionInput>[];
-
-    int i = 0;
-    while (i < lines.length) {
-      final questionText = lines[i].replaceAll(RegExp(r'^\d+[.)\s]+'), '');
-      if (i + 1 >= lines.length) break;
-
-      final secondLine = lines[i + 1];
-      final qInput = _QuestionInput();
-      qInput.question.text = questionText;
-
-      // 1. Проверка на True/False
-      final tfWords = ['правда', 'ложь', 'true', 'false', 'rost', 'yolg\'on', 'yolgon'];
-      if (tfWords.contains(secondLine.toLowerCase())) {
-        qInput.type = _QuestionType.trueFalse;
-        qInput.trueFalseValue = secondLine.toLowerCase() == 'правда' || 
-                               secondLine.toLowerCase() == 'true' || 
-                               secondLine.toLowerCase() == 'rost';
-        newQuestions.add(qInput);
-        i += 2;
-        continue;
-      }
-
-      // 2. Проверка на MCQ (Тест)
-      // Если в строке есть запятые и после неё идет еще одна строка с цифрой
-      if (secondLine.contains(',') && i + 2 < lines.length && int.tryParse(lines[i + 2]) != null) {
-        final options = secondLine.split(',').map((o) => o.trim()).toList();
-        final correctIdx = (int.tryParse(lines[i + 2]) ?? 1) - 1;
-        
-        qInput.type = _QuestionType.mcq;
-        for (int j = 0; j < min(4, options.length); j++) {
-          qInput.options[j].text = options[j];
-        }
-        qInput.correctIndex = correctIdx.clamp(0, 3);
-        newQuestions.add(qInput);
-        i += 3;
-        continue;
-      }
-
-      // 3. По умолчанию - короткий ответ
-      qInput.type = _QuestionType.short;
-      qInput.answer.text = secondLine;
-      newQuestions.add(qInput);
-      i += 2;
-    }
-
-    if (newQuestions.isNotEmpty) {
-      setState(() {
-        _questions.addAll(newQuestions);
-      });
+  _QuestionType _mapType(ImportedQuestionType type) {
+    switch (type) {
+      case ImportedQuestionType.short: return _QuestionType.short;
+      case ImportedQuestionType.trueFalse: return _QuestionType.trueFalse;
+      case ImportedQuestionType.mcq: return _QuestionType.mcq;
     }
   }
 
@@ -1987,7 +2064,7 @@ class _TeacherCreatePageState extends State<TeacherCreatePage> {
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: L10n.s('duration'),
-                  hintText: 'Например: 10',
+                  hintText: '${L10n.s('duration').toLowerCase()}...',
                   border: const OutlineInputBorder(),
                 ),
               ),
@@ -1998,7 +2075,7 @@ class _TeacherCreatePageState extends State<TeacherCreatePage> {
                   Text(L10n.s('questions_label'),
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                   TextButton.icon(
-                    onPressed: _showBulkImportDialog,
+                    onPressed: _importQuestions,
                     icon: const Icon(Icons.paste_rounded, size: 18),
                     label: Text(L10n.s('bulk_import')),
                     style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
@@ -2386,6 +2463,59 @@ class TeacherRoomPage extends StatelessWidget {
     }
   }
 
+  Future<void> _exportGroupReport(BuildContext context, String group, List<QueryDocumentSnapshot<Map<String, dynamic>>> allSubmissions, List<QueryDocumentSnapshot<Map<String, dynamic>>> questions) async {
+    final groupSubs = allSubmissions.where((s) => s.data()['studentGroup'] == group).toList();
+    if (groupSubs.isEmpty) return;
+
+    final pdf = pw.Document();
+    final font = await PdfGoogleFonts.robotoRegular();
+    final boldFont = await PdfGoogleFonts.robotoBold();
+
+    final avg = groupSubs.map((s) => (s.data()['grade'] as num?)?.toDouble() ?? 0).reduce((a, b) => a + b) / groupSubs.length;
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) => [
+          pw.Header(
+            level: 0,
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('${L10n.s('group_report')}: $group', style: pw.TextStyle(font: boldFont, fontSize: 24)),
+                pw.Text(L10n.s('brand_name'), style: pw.TextStyle(font: font, fontSize: 10)),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 20),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+            children: [
+              _buildPdfStat(L10n.s('submissions'), groupSubs.length.toString(), boldFont),
+              _buildPdfStat(L10n.s('avg_grade'), avg.toStringAsFixed(2), boldFont),
+            ],
+          ),
+          pw.SizedBox(height: 20),
+          pw.TableHelper.fromTextArray(
+            headerStyle: pw.TextStyle(font: boldFont, color: PdfColors.white),
+            headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey),
+            context: context,
+            data: <List<String>>[
+              <String>[L10n.s('student_name'), L10n.s('correct_label'), L10n.s('grade_label')],
+              ...groupSubs.map((s) => [
+                    s.data()['studentName']?.toString() ?? '',
+                    '${s.data()['correctCount']} / ${s.data()['totalQuestions']}',
+                    s.data()['grade']?.toString() ?? ''
+                  ]),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    await Printing.layoutPdf(onLayout: (format) async => pdf.save());
+  }
+
   Future<void> _duplicateRoom(BuildContext context) async {
     final roomDoc = await FirebaseFirestore.instance.collection('rooms').doc(roomCode).get();
     final questions = await FirebaseFirestore.instance.collection('rooms').doc(roomCode).collection('questions').get();
@@ -2477,8 +2607,13 @@ class TeacherRoomPage extends StatelessWidget {
             title: Text(L10n.s('room_code')),
             actions: [
               IconButton(
+                icon: const Icon(Icons.manage_accounts_rounded),
+                tooltip: L10n.s('access_management'),
+                onPressed: () => Navigator.of(context).push(_modernRoute(RoomAccessManagementScreen(roomCode: roomCode))),
+              ),
+              IconButton(
                 icon: const Icon(Icons.edit_rounded),
-                tooltip: 'Редактировать тест',
+                tooltip: L10n.s('edit_test'),
                 onPressed: () => _editRoom(context),
               ),
               IconButton(icon: const Icon(Icons.copy_rounded), onPressed: () => _duplicateRoom(context)),
@@ -2654,7 +2789,32 @@ class TeacherRoomPage extends StatelessWidget {
                                     )
                                   else ...[
                                     // Секция Статистика
-                                    _SectionHeader(title: L10n.s('accuracy')),
+                                    StreamBuilder<QuerySnapshot>(
+                                      stream: FirebaseFirestore.instance
+                                          .collection('rooms')
+                                          .doc(roomCode)
+                                          .collection('activity')
+                                          .where('lastActive', isGreaterThan: DateTime.now().subtract(const Duration(minutes: 2)))
+                                          .snapshots(),
+                                      builder: (context, actSnapshot) {
+                                        final activeCount = actSnapshot.data?.docs.length ?? 0;
+                                        return Column(
+                                          children: [
+                                            if (activeCount > 0)
+                                              Padding(
+                                                padding: const EdgeInsets.only(bottom: 12),
+                                                child: _ModernStatCard(
+                                                  icon: Icons.bolt_rounded,
+                                                  value: activeCount.toString(),
+                                                  label: L10n.s('active_now'),
+                                                  color: Colors.purple,
+                                                ),
+                                              ),
+                                            _SectionHeader(title: L10n.s('accuracy')),
+                                          ],
+                                        );
+                                      },
+                                    ),
                                     const SizedBox(height: 12),
                                     Row(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2699,6 +2859,16 @@ class TeacherRoomPage extends StatelessWidget {
                                     const SizedBox(height: 24),
 
                                     // Секция Аналитика
+                                    _SectionHeader(title: L10n.s('accuracy')),
+                                    const SizedBox(height: 12),
+                                    _GroupAvgChart(
+                                      stats: insights.groupStats,
+                                      submissions: docs,
+                                      questions: questions,
+                                      onExportGroup: (group) => _exportGroupReport(context, group, docs, questions),
+                                    ),
+                                    const SizedBox(height: 24),
+
                                     Row(
                                       children: [
                                         Expanded(child: _TopStudentsCard(insights: insights)),
@@ -2706,6 +2876,8 @@ class TeacherRoomPage extends StatelessWidget {
                                         Expanded(child: _HardQuestionsCard(insights: insights, questions: questions)),
                                       ],
                                     ),
+                                    const SizedBox(height: 12),
+                                    _BottomStudentsCard(insights: insights),
                                     const SizedBox(height: 24),
 
                                     // Секция Экспорт
@@ -2876,12 +3048,12 @@ class _SubmissionCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${data['studentName'] ?? "Ученик"} (${data['studentGroup'] ?? "-"})',
+                      '${data['studentName'] ?? L10n.s('student')} (${data['studentGroup'] ?? "-"})',
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${L10n.s('attempt_label')} #$attempt • ${data['correctCount']}/${data['totalQuestions']} верно • ${appLeaves > 0 ? "⚠️ $appLeaves выходов" : "Стабильно"}',
+                      '${L10n.s('attempt_label')} #$attempt • ${data['correctCount']}/${data['totalQuestions']} ${L10n.s('correct_label').toLowerCase()} • ${appLeaves > 0 ? "⚠️ $appLeaves" : "OK"}',
                       style: TextStyle(
                         fontSize: 13,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -2958,13 +3130,22 @@ class _SubmissionCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          entry.value.toString(),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isCorrect ? Colors.green : Colors.redAccent,
-                          ),
-                        ),
+                        Builder(builder: (context) {
+                          final val = entry.value;
+                          String display = val.toString();
+                          if (val is int) {
+                            display = '${L10n.s('variant')} ${val + 1}';
+                          } else if (val is bool) {
+                            display = val ? L10n.s('true') : L10n.s('false');
+                          }
+                          return Text(
+                            display,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isCorrect ? Colors.green : Colors.redAccent,
+                            ),
+                          );
+                        }),
                       ],
                     ),
                   );
@@ -3078,6 +3259,150 @@ class _ModernStatCard extends StatelessWidget {
   }
 }
 
+class _GroupAvgChart extends StatelessWidget {
+  final List<_GroupStats> stats;
+  final List<QueryDocumentSnapshot<Map<String, dynamic>>> submissions;
+  final List<QueryDocumentSnapshot<Map<String, dynamic>>> questions;
+  final Function(String group) onExportGroup;
+
+  const _GroupAvgChart({
+    required this.stats,
+    required this.submissions,
+    required this.questions,
+    required this.onExportGroup,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (stats.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(L10n.s('group_stats'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 180,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: 5.5,
+                  barTouchData: BarTouchData(enabled: true),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          if (value.toInt() >= 0 && value.toInt() < stats.length) {
+                            return SideTitleWidget(
+                              meta: meta,
+                              space: 8,
+                              child: Text(stats[value.toInt()].name, 
+                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          return Text(value.toInt().toString(), 
+                              style: const TextStyle(fontSize: 12, color: Colors.grey));
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  gridData: const FlGridData(show: false),
+                  borderData: FlBorderData(show: false),
+                  barGroups: List.generate(stats.length, (i) {
+                    return BarChartGroupData(
+                      x: i,
+                      barRods: [
+                        BarChartRodData(
+                          toY: stats[i].avgGrade,
+                          color: stats[i].avgGrade >= 4 ? Colors.green : (stats[i].avgGrade >= 3 ? Colors.orange : Colors.redAccent),
+                          width: 20,
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            ...stats.map((s) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(s.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text('${L10n.s('submissions')}: ${s.count}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(s.avgGrade.toStringAsFixed(2), style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent),
+                        onPressed: () => onExportGroup(s.name),
+                        tooltip: L10n.s('group_report'),
+                      ),
+                    ],
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomStudentsCard extends StatelessWidget {
+  final _RoomInsights insights;
+  const _BottomStudentsCard({required this.insights});
+
+  @override
+  Widget build(BuildContext context) {
+    final students = insights.bottomStudents.where((s) => s.avgGrade < 3.5).toList();
+    if (students.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+                const SizedBox(width: 8),
+                Text(L10n.s('bottom_students'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ...students.map((s) => ListTile(
+                  dense: true,
+                  title: Text(s.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(s.group),
+                  trailing: Text(s.avgGrade.toStringAsFixed(1), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _TopStudentsCard extends StatelessWidget {
   const _TopStudentsCard({required this.insights});
 
@@ -3103,10 +3428,10 @@ class _TopStudentsCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             if (insights.topStudents.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Text('Пока нет данных', style: TextStyle(color: Colors.grey)),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Text(L10n.s('no_data'), style: const TextStyle(color: Colors.grey)),
                 ),
               )
             else
@@ -3176,15 +3501,15 @@ class _HardQuestionsCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             if (insights.hardestQuestions.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Text('Пока нет данных', style: TextStyle(color: Colors.grey)),
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Text(L10n.s('no_data'), style: const TextStyle(color: Colors.grey)),
                 ),
               )
             else
               ...insights.hardestQuestions.map((q) {
-                final questionText = q.questionText.isNotEmpty ? q.questionText : 'Вопрос ${q.questionIndex + 1}';
+                final questionText = q.questionText.isNotEmpty ? q.questionText : '${L10n.s('question')} ${q.questionIndex + 1}';
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 14),
@@ -3340,6 +3665,18 @@ class _StudentJoinPageState extends State<StudentJoinPage> {
           .where('studentGroup', isEqualTo: group)
           .get();
 
+      final attemptLimit = (roomData['accessSettings']?['defaultAttempts'] as num?)?.toInt() ?? 1;
+      final groupAccess = (roomData['accessSettings']?['groupAccess'] as Map?)?[group] ?? true;
+
+      if (!groupAccess) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(L10n.s('room_closed_entry')), backgroundColor: Colors.red),
+          );
+        }
+        return;
+      }
+
       final individuallyAuthorized = await _hasIndividualAccess(
         firestore: firestore,
         roomCode: roomCode,
@@ -3348,12 +3685,12 @@ class _StudentJoinPageState extends State<StudentJoinPage> {
         submissions: existing.docs,
       );
 
-      final hasPreviousAttempt = existing.docs.isNotEmpty;
+      final hasReachedLimit = attemptLimit != 0 && existing.docs.length >= attemptLimit;
       String? denyMessageKey;
 
       if (isRoomClosed && !individuallyAuthorized) {
         denyMessageKey = 'room_closed_entry';
-      } else if (hasPreviousAttempt && !individuallyAuthorized) {
+      } else if (hasReachedLimit && !individuallyAuthorized) {
         denyMessageKey = 'already_submitted';
       }
 
@@ -3495,6 +3832,7 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
   int _appLeaveCount = 0;
   int _currentIndex = 0;
   bool _roomClosed = false;
+  Timer? _heartbeatTimer;
 
   String get _studentKey => _studentKeyFromName(widget.studentName);
 
@@ -3503,6 +3841,30 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _loadDraft();
+    _startHeartbeat();
+  }
+
+  void _startHeartbeat() {
+    _sendHeartbeat();
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (_) => _sendHeartbeat());
+  }
+
+  Future<void> _sendHeartbeat() async {
+    try {
+      final docId = '${_studentKey}_${widget.studentGroup}';
+      await FirebaseFirestore.instance
+          .collection('rooms')
+          .doc(widget.roomCode)
+          .collection('activity')
+          .doc(docId)
+          .set({
+        'studentName': widget.studentName,
+        'studentGroup': widget.studentGroup,
+        'lastActive': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('Heartbeat error: $e');
+    }
   }
 
   Future<void> _saveDraft() async {
@@ -3534,6 +3896,7 @@ class _StudentAnswerPageState extends State<StudentAnswerPage> with WidgetsBindi
 
   @override
   void dispose() {
+    _heartbeatTimer?.cancel();
     _pageController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
@@ -4374,8 +4737,14 @@ class StudentResultPage extends StatelessWidget {
           const SizedBox(height: 12),
           ...questions.map((doc) {
             final isCorrect = perQuestionCorrect[doc.id] ?? false;
-            final studentAnswer = answers[doc.id]?.toString() ?? '-';
-            final questionText = doc.data()['text'] ?? 'Question';
+            final val = answers[doc.id];
+            String displayAnswer = val?.toString() ?? '-';
+            if (val is int) {
+              displayAnswer = '${L10n.s('variant')} ${val + 1}';
+            } else if (val is bool) {
+              displayAnswer = val ? L10n.s('true') : L10n.s('false');
+            }
+            final questionText = doc.data()['text'] ?? L10n.s('question');
 
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
@@ -4385,7 +4754,7 @@ class StudentResultPage extends StatelessWidget {
                   color: isCorrect ? Colors.green : Colors.redAccent,
                 ),
                 title: Text(questionText),
-                subtitle: Text('${L10n.s('variant')}: $studentAnswer'),
+                subtitle: Text('${L10n.s('your_answer')}: $displayAnswer'),
               ),
             );
           }),
@@ -5091,16 +5460,22 @@ _RoomInsights _buildInsights(
 ) {
   final byStudent = <String, _StudentAgg>{};
   final byQuestion = <String, _QuestionAgg>{};
+  final byGroup = <String, _GroupAgg>{};
 
   for (final doc in submissions) {
     final data = doc.data();
     final studentName = (data['studentName'] ?? 'Ученик').toString();
+    final studentGroup = (data['studentGroup'] ?? '-').toString();
     final grade = (data['grade'] as num?)?.toDouble() ?? 0;
     final perQ = (data['perQuestionCorrect'] as Map?)?.cast<String, dynamic>() ?? {};
 
-    final agg = byStudent.putIfAbsent(studentName, () => _StudentAgg(studentName));
-    agg.gradeSum += grade;
-    agg.count += 1;
+    final sAgg = byStudent.putIfAbsent(studentName, () => _StudentAgg(studentName, studentGroup));
+    sAgg.gradeSum += grade;
+    sAgg.count += 1;
+
+    final gAgg = byGroup.putIfAbsent(studentGroup, () => _GroupAgg(studentGroup));
+    gAgg.gradeSum += grade;
+    gAgg.count += 1;
 
     for (final entry in perQ.entries) {
       final qid = entry.key;
@@ -5111,17 +5486,24 @@ _RoomInsights _buildInsights(
     }
   }
 
-  final topStudents = byStudent.values.toList()
+  final studentList = byStudent.values.toList()
     ..sort((a, b) => b.avgGrade.compareTo(a.avgGrade));
+
+  final topStudents = studentList.take(10).map((s) => _StudentScore(s.name, s.group, s.avgGrade)).toList();
+  final bottomStudents = studentList.reversed.take(10).map((s) => _StudentScore(s.name, s.group, s.avgGrade)).toList();
+
+  final groupStats = byGroup.values.map((g) => _GroupStats(g.name, g.avgGrade, g.count)).toList()
+    ..sort((a, b) => a.name.compareTo(b.name));
 
   final hardest = byQuestion.values.toList()
     ..sort((a, b) => a.correctPercent.compareTo(b.correctPercent));
 
   return _RoomInsights(
-    topStudents: topStudents.take(3).map((s) => _StudentScore(s.name, s.avgGrade)).toList(),
+    topStudents: topStudents,
+    bottomStudents: bottomStudents,
     hardestQuestions: hardest
         .where((q) => q.total >= 1)
-        .take(4)
+        .take(6)
         .map((q) {
           final qDoc = questions.where((doc) => doc.id == q.questionId).firstOrNull;
           final index = int.tryParse(q.questionId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
@@ -5132,27 +5514,49 @@ _RoomInsights _buildInsights(
             correctPercent: q.correctPercent,
           );
         }).toList(),
+    groupStats: groupStats,
   );
 }
 
 class _RoomInsights {
   const _RoomInsights({
     required this.topStudents,
+    required this.bottomStudents,
     required this.hardestQuestions,
+    required this.groupStats,
   });
 
   final List<_StudentScore> topStudents;
+  final List<_StudentScore> bottomStudents;
   final List<_QuestionDifficulty> hardestQuestions;
+  final List<_GroupStats> groupStats;
+}
+
+class _GroupStats {
+  final String name;
+  final double avgGrade;
+  final int count;
+  const _GroupStats(this.name, this.avgGrade, this.count);
 }
 
 class _StudentScore {
-  const _StudentScore(this.name, this.avgGrade);
+  const _StudentScore(this.name, this.group, this.avgGrade);
   final String name;
+  final String group;
   final double avgGrade;
 }
 
 class _StudentAgg {
-  _StudentAgg(this.name);
+  _StudentAgg(this.name, this.group);
+  final String name;
+  final String group;
+  double gradeSum = 0;
+  int count = 0;
+  double get avgGrade => count == 0 ? 0 : gradeSum / count;
+}
+
+class _GroupAgg {
+  _GroupAgg(this.name);
   final String name;
   double gradeSum = 0;
   int count = 0;
