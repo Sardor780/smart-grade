@@ -1,5 +1,5 @@
-name: untitled
-description: "A new Flutter project."
+name: smart_grader
+description: "Smart-Grader - Educational Grading System"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -36,6 +36,16 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.14.4
   flutter_lints: ^6.0.0
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/icon/icon.png"
+  web:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    background_color: "#00C4B4"
+    theme_color: "#00C4B4"
 
 flutter:
   uses-material-design: true
